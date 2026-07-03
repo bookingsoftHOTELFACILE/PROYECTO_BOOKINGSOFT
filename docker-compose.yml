@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres_empresa
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: facile
+      POSTGRES_USER: facile
+      POSTGRES_PASSWORD: 123456
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U facile -d facile"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - empresa_network
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: pgadmin_empresa
+    restart: unless-stopped
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: apartahotelfacile@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+
+    ports:
+      - "8080:80"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    networks:
+      - empresa_network
+
+volumes:
+  postgres_data:
+
+networks:
+  empresa_network:
+    driver: bridge
+
+
